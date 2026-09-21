@@ -127,8 +127,35 @@ h1, h2, h3 {
   to { opacity: 1; }
 }
 
+@keyframes scan-sweep {
+  0% { transform: translateY(-140%); opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateY(140%); opacity: 0; }
+}
+
 .animate-overlay-fade {
   animation: overlay-fade 0.18s ease both;
+}
+
+.animate-grow-y {
+  animation: grow-y 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--i, 0) * 30ms);
+  transform-origin: bottom;
+}
+
+.animate-pulse-dot {
+  animation: pulse-dot 2.4s ease-in-out infinite;
+  animation-delay: calc(var(--i, 0) * 160ms);
+}
+
+.scan-line {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, hsl(var(--primary-h) 95% 65%), transparent);
+  box-shadow: 0 0 14px 2px hsl(var(--primary-h) 95% 60% / 0.85);
+  animation: scan-sweep 2.4s cubic-bezier(0.65, 0, 0.35, 1) infinite;
 }
 
 .animate-fade-up {
@@ -194,9 +221,15 @@ h1, h2, h3 {
   .animate-pop,
   .animate-scale-in,
   .animate-overlay-fade,
+  .animate-grow-y,
+  .animate-pulse-dot,
   .brand-blob,
-  .skeleton-shimmer {
+  .skeleton-shimmer,
+  .scan-line {
     animation: none !important;
+  }
+  .scan-line {
+    opacity: 0 !important;
   }
   .tilt-card {
     transition: none !important;

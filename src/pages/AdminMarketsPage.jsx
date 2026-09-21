@@ -61,7 +61,7 @@ export function AdminMarketsPage() {
     };
     try {
       const res = await createMarket(payload);
-      setCreated({ slug: res.market.slug, username: res.owner.username });
+      setCreated({ slug: res.market.slug, username: res.owner.username, password: payload.ownerPassword });
       reload();
     } catch (err) {
       setError(err.message);
@@ -158,7 +158,11 @@ export function AdminMarketsPage() {
               <div className="rounded-field bg-base-200 p-3 font-mono text-sm">
                 <div>Kod: {created.slug}</div>
                 <div>Login: {created.username}</div>
+                <div>Parol: {created.password}</div>
               </div>
+              <p className="text-xs text-base-content/50">
+                Parol faqat shu yerda ko'rsatiladi — qayta ko'rish imkoni yo'q, egasiga hoziroq yuboring.
+              </p>
               <div className="mt-2 flex justify-end">
                 <Button onClick={() => setCreating(false)}>Yopish</Button>
               </div>
