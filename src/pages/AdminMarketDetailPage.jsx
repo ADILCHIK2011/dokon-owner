@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Wallet, Receipt, Users, Package } from 'lucide-react';
-import { getMarket, renewMarket, updateMarket } from '../api/admin.api';
+import { getMarket, renewMarket, updateMarket, getMarketNotes } from '../api/admin.api';
 import { PageHeader } from '../components/PageHeader';
 import { Button } from '../components/Button';
 import { Badge } from '../components/Badge';
@@ -25,6 +25,8 @@ export function AdminMarketDetailPage() {
   const { id } = useParams();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [notes, setNotes] = useState([]);
+  const [notesLoading, setNotesLoading] = useState(true);
 
   function reload() {
     setLoading(true);
@@ -34,6 +36,13 @@ export function AdminMarketDetailPage() {
   }
 
   useEffect(reload, [id]);
+
+  useEffect(() => {
+    setNotesLoading(true);
+    getMarketNotes(id, { limit: 20 })
+      .then((data) => setNotes(data.notes))
+      .finally(() => setNotesLoading(false));
+  }, [id]);
 
   async function handleRenew() {
     await renewMarket(id, 1);
@@ -129,7 +138,7 @@ export function AdminMarketDetailPage() {
           </div>
         </div>
 
-        <div className="rounded-box border border-base-300 bg-base-100 p-5">
+        <div className="mb-6 rounded-box border border-base-300 bg-base-100 p-5">
           <h2 className="mb-3 font-heading text-base font-semibold">Doʻkon egasi</h2>
           {owner ? (
             <div className="text-sm">
@@ -141,6 +150,31 @@ export function AdminMarketDetailPage() {
             </div>
           ) : (
             <p className="text-sm text-base-content/50">Egasi topilmadi.</p>
+          )}
+        </div>
+
+        <div className="rounded-box border border-base-300 bg-base-100 p-5">
+          <h2 className="mb-3 font-heading text-base font-semibold">Eslatmalar</h2>
+          {notesLoading && <p className="text-sm text-base-content/50">Yuklanmoqda...</p>}
+          {!notesLoading && notes.length === 0 && (
+            <p className="text-sm text-base-content/50">Hali eslatma yoʻq.</p>
+          )}
+          {!notesLoading && notes.length > 0 && (
+            <ul className="flex flex-col gap-3">
+              {notes.map((note) => (
+                <li key={note._id} className="flex items-start gap-3 rounded-field border border-base-300 p-3">
+                  <Badge tone={note.type === 'flag' ? 'danger' : 'neutral'}>
+                    {note.type === 'flag' ? 'Bildirishnoma' : 'Kunlik'}
+                  </Badge>
+                  <div className="flex-1 text-sm">
+                    <p>{note.text}</p>
+                    <p className="mt-1 text-xs text-base-content/40">
+                      {new Date(note.createdAt).toLocaleString('uz-UZ')}
+                    </p>
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
       </div>

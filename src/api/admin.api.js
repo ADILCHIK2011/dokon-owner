@@ -28,3 +28,7 @@ export function renewMarket(id, months) {
 export function updateMarket(id, data) {
   return request(`/admin/markets/${id}`, { method: 'PUT', body: data });
 }
+
+export function getMarketNotes(id, params = {}) {
+  return request(`/admin/markets/${id}/notes${qs(params)}`);
+}
