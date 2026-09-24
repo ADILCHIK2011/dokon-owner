@@ -11,6 +11,7 @@ import { PLAN_PRICES, PLAN_FEATURES } from '../data/plans';
 
 function statusOf(market) {
   if (!market.active) return { tone: 'neutral', label: "O'chirilgan" };
+  if (market.alohida) return { tone: 'success', label: 'Faol' };
   const daysLeft = (new Date(market.subscriptionExpiresAt) - Date.now()) / (1000 * 60 * 60 * 24);
   if (daysLeft < 0) return { tone: 'danger', label: 'Muddati tugagan' };
   if (daysLeft < 5) return { tone: 'warning', label: `${Math.ceil(daysLeft)} kun qoldi` };
@@ -59,6 +60,11 @@ export function AdminMarketDetailPage() {
     reload();
   }
 
+  async function handleToggleAlohida() {
+    await updateMarket(id, { alohida: !data.market.alohida });
+    reload();
+  }
+
   if (loading || !data) {
     return (
       <div className="min-h-screen bg-brand-radial p-4 sm:p-8">
@@ -85,15 +91,21 @@ export function AdminMarketDetailPage() {
               <Button variant="secondary" onClick={handleToggleActive}>
                 {market.active ? "O'chirish" : 'Yoqish'}
               </Button>
-              <Button onClick={handleRenew}>+1 oy uzaytirish</Button>
+              <Button variant="secondary" onClick={handleToggleAlohida}>
+                {market.alohida ? 'ALOHIDA holatini bekor qilish' : 'ALOHIDA qilish'}
+              </Button>
+              {!market.alohida && <Button onClick={handleRenew}>+1 oy uzaytirish</Button>}
             </div>
           }
         />
 
         <div className="mb-6 flex items-center gap-3">
           <Badge tone={status.tone}>{status.label}</Badge>
+          {market.alohida && <Badge tone="primary">ALOHIDA</Badge>}
           <span className="text-sm text-base-content/60">
-            Obuna: {new Date(market.subscriptionExpiresAt).toLocaleDateString('uz-UZ')}
+            {market.alohida
+              ? "Obuna talab qilinmaydi — doim Pro"
+              : `Obuna: ${new Date(market.subscriptionExpiresAt).toLocaleDateString('uz-UZ')}`}
           </span>
         </div>
 
@@ -115,28 +127,30 @@ export function AdminMarketDetailPage() {
           <StatTile label="Mahsulotlar" value={productsCount} icon={Package} />
         </div>
 
-        <div className="mb-6">
-          <h2 className="mb-3 font-heading text-base font-semibold">Obuna rejasi</h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-            <PricingCard
-              title="Oddiy"
-              price={PLAN_PRICES.starter}
-              features={PLAN_FEATURES.starter}
-              active={market.plan !== 'pro'}
-              actionLabel="Oddiy rejaga o'tkazish"
-              onSelect={() => handleChangePlan('starter')}
-            />
-            <PricingCard
-              title="Pro"
-              price={PLAN_PRICES.pro}
-              features={PLAN_FEATURES.pro}
-              highlight
-              active={market.plan === 'pro'}
-              actionLabel="Pro rejaga o'tkazish"
-              onSelect={() => handleChangePlan('pro')}
-            />
+        {!market.alohida && (
+          <div className="mb-6">
+            <h2 className="mb-3 font-heading text-base font-semibold">Obuna rejasi</h2>
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <PricingCard
+                title="Oddiy"
+                price={PLAN_PRICES.starter}
+                features={PLAN_FEATURES.starter}
+                active={market.plan !== 'pro'}
+                actionLabel="Oddiy rejaga o'tkazish"
+                onSelect={() => handleChangePlan('starter')}
+              />
+              <PricingCard
+                title="Pro"
+                price={PLAN_PRICES.pro}
+                features={PLAN_FEATURES.pro}
+                highlight
+                active={market.plan === 'pro'}
+                actionLabel="Pro rejaga o'tkazish"
+                onSelect={() => handleChangePlan('pro')}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
         <div className="mb-6 rounded-box border border-base-300 bg-base-100 p-5">
           <h2 className="mb-3 font-heading text-base font-semibold">Doʻkon egasi</h2>
