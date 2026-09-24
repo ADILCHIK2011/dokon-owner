@@ -17,7 +17,6 @@ function planLabel(plan) {
 
 function statusOf(market) {
   if (!market.active) return { tone: 'neutral', label: "O'chirilgan" };
-  if (market.alohida) return { tone: 'success', label: 'Faol' };
   const daysLeft = (new Date(market.subscriptionExpiresAt) - Date.now()) / (1000 * 60 * 60 * 24);
   if (daysLeft < 0) return { tone: 'danger', label: 'Muddati tugagan' };
   if (daysLeft < 5) return { tone: 'warning', label: `${Math.ceil(daysLeft)} kun qoldi` };
@@ -34,7 +33,6 @@ export function AdminMarketsPage() {
   const [error, setError] = useState('');
   const [created, setCreated] = useState(null);
   const [newPlan, setNewPlan] = useState('starter');
-  const [newAlohida, setNewAlohida] = useState(false);
 
   function reload() {
     setLoading(true);
@@ -57,7 +55,6 @@ export function AdminMarketsPage() {
       slug: form.get('slug'),
       months: Number(form.get('months') || 1),
       plan: newPlan,
-      alohida: newAlohida,
       ownerName: form.get('ownerName'),
       ownerUsername: form.get('ownerUsername'),
       ownerPassword: form.get('ownerPassword'),
@@ -92,15 +89,7 @@ export function AdminMarketsPage() {
               <Button variant="secondary" onClick={logout}>
                 Chiqish
               </Button>
-              <Button
-                onClick={() => {
-                  setCreating(true);
-                  setCreated(null);
-                  setError('');
-                  setNewPlan('starter');
-                  setNewAlohida(false);
-                }}
-              >
+              <Button onClick={() => { setCreating(true); setCreated(null); setError(''); setNewPlan('starter'); }}>
                 + Yangi do'kon
               </Button>
             </div>
@@ -128,11 +117,6 @@ export function AdminMarketsPage() {
                       <Link to={`/markets/${m._id}`} className="hover:text-primary hover:underline">
                         {m.name}
                       </Link>
-                      {m.alohida && (
-                        <span className="ml-2">
-                          <Badge tone="primary">ALOHIDA</Badge>
-                        </span>
-                      )}
                     </td>
                     <td className="font-mono text-sm text-base-content/70">{m.slug}</td>
                     <td>
@@ -142,14 +126,12 @@ export function AdminMarketsPage() {
                       <Badge tone={status.tone}>{status.label}</Badge>
                     </td>
                     <td className="text-base-content/70">
-                      {m.alohida ? 'Muddatsiz' : new Date(m.subscriptionExpiresAt).toLocaleDateString('uz-UZ')}
+                      {new Date(m.subscriptionExpiresAt).toLocaleDateString('uz-UZ')}
                     </td>
                     <td className="whitespace-nowrap text-right">
-                      {!m.alohida && (
-                        <button className="btn btn-ghost btn-sm" onClick={() => handleRenew(m)}>
-                          +1 oy uzaytirish
-                        </button>
-                      )}
+                      <button className="btn btn-ghost btn-sm" onClick={() => handleRenew(m)}>
+                        +1 oy uzaytirish
+                      </button>
                       <button className="btn btn-ghost btn-sm" onClick={() => handleToggleActive(m)}>
                         {m.active ? "O'chirish" : 'Yoqish'}
                       </button>
@@ -197,53 +179,29 @@ export function AdminMarketsPage() {
                 </span>
                 <input className="input input-bordered w-full" name="slug" required />
               </label>
-              <label className="flex items-center gap-2 rounded-field border border-base-300 p-3">
-                <input
-                  type="checkbox"
-                  className="checkbox"
-                  checked={newAlohida}
-                  onChange={(e) => setNewAlohida(e.target.checked)}
-                />
-                <span className="text-sm">
-                  <span className="font-medium">ALOHIDA do'kon</span>
-                  <span className="block text-base-content/50">
-                    Oylik toʻlovsiz, doim Pro rejada, obuna muddati talab qilinmaydi
-                  </span>
-                </span>
+              <label className="block">
+                <span className="mb-1 block text-sm text-base-content/60">Obuna muddati (oy)</span>
+                <input className="input input-bordered w-full" name="months" type="number" min="1" defaultValue={1} />
               </label>
-              {!newAlohida && (
-                <>
-                  <label className="block">
-                    <span className="mb-1 block text-sm text-base-content/60">Obuna muddati (oy)</span>
-                    <input
-                      className="input input-bordered w-full"
-                      name="months"
-                      type="number"
-                      min="1"
-                      defaultValue={1}
-                    />
-                  </label>
-                  <label className="block">
-                    <span className="mb-1 block text-sm text-base-content/60">Reja</span>
-                    <div className="join w-full">
-                      <button
-                        type="button"
-                        className={`btn join-item flex-1 ${newPlan === 'starter' ? 'btn-primary' : 'btn-outline'}`}
-                        onClick={() => setNewPlan('starter')}
-                      >
-                        Oddiy — {PLAN_PRICES.starter.toLocaleString()} so'm/oy
-                      </button>
-                      <button
-                        type="button"
-                        className={`btn join-item flex-1 ${newPlan === 'pro' ? 'btn-primary' : 'btn-outline'}`}
-                        onClick={() => setNewPlan('pro')}
-                      >
-                        Pro — {PLAN_PRICES.pro.toLocaleString()} so'm/oy
-                      </button>
-                    </div>
-                  </label>
-                </>
-              )}
+              <label className="block">
+                <span className="mb-1 block text-sm text-base-content/60">Reja</span>
+                <div className="join w-full">
+                  <button
+                    type="button"
+                    className={`btn join-item flex-1 ${newPlan === 'starter' ? 'btn-primary' : 'btn-outline'}`}
+                    onClick={() => setNewPlan('starter')}
+                  >
+                    Oddiy — {PLAN_PRICES.starter.toLocaleString()} so'm/oy
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn join-item flex-1 ${newPlan === 'pro' ? 'btn-primary' : 'btn-outline'}`}
+                    onClick={() => setNewPlan('pro')}
+                  >
+                    Pro — {PLAN_PRICES.pro.toLocaleString()} so'm/oy
+                  </button>
+                </div>
+              </label>
               <div className="divider my-0">Do'kon egasi</div>
               <label className="block">
                 <span className="mb-1 block text-sm text-base-content/60">Ism</span>
